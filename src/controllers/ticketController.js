@@ -23,6 +23,14 @@ const purchase = async (req, res) => {
   res.status(201).json(ticket);
 };
 
+const listTickets = async (req, res) => {
+  const tickets = await prisma.ticket.findMany({
+    where: { userId: req.user.id },
+  });
+  res.json(tickets);
+};
+
 module.exports = {
   purchase,
+  listTickets,
 };
