@@ -34,9 +34,6 @@ app.get("/", async (req, res) => {
   res.send("Hello word");
 });
 app.use("/auth", authRouter);
-app.use("/colis", colisRouter);
-app.use("/groupages", groupageRouter);
-app.use("/client", clientCode);
 
 app.get("/", (req, res) => {
   res.send("<h1>Bienvenue au serveur C3</h1>");
