@@ -1,27 +1,28 @@
-// const { comparePassword } = require("../../bcryptConfigconfig/bcryptConfig");
 const { generateToken } = require("../../config/jwtconfig");
 const { prisma, findUserByEmail } = require("../../database/prisma");
 const bcrypt = require("bcrypt");
 
+const SALT_ROUNDS = 10;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+/**
+ * Register a new user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
 const register = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Regex pour valider le format de l'email
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-    // Basic validation
     if (!email || !password) {
-      return res.status(400).json({ error: "Champs obligatoires manquants" });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Vérification du format de l'email
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Adresse email invalide" });
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ error: "Invalid email address" });
     }
 
-    const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(password, salt);
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await prisma.user.create({
       data: {
@@ -31,30 +32,40 @@ const register = async (req, res) => {
       },
     });
 
-    res.status(201).json({ user });
+    res
+      .status(201)
+      .json({ user: { id: user.id, email: user.email, role: user.role } });
   } catch (error) {
-    console.error("Erreur lors de la création de l'utilisateur:", error);
+    console.error("Error creating user:", error);
 
-    if (error.rel && error.rel.includes("Email")) {
-      res.status(400).json({ error: "Cet email existe déjà" });
-    } else {
-      res.status(500).json({ error: "Erreur interne du serveur" });
+    if (error.code === "P2002" && error.meta?.target?.includes("email")) {
+      return res.status(400).json({ error: "Email already exists" });
     }
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-async function signin(req, res) {
+/**
+ * Sign in an existing user
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await findUserByEmail(email);
-    console.log(user);
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" }); // Handle invalid credentials
-    }
-    const isPasswordValid = bcrypt.compareSync(password, user.password);
 
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password" }); // Handle invalid credentials
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const token = generateToken(user);
@@ -64,8 +75,9 @@ async function signin(req, res) {
       role: user.role,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: error });
+    console.error("Error during signin:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-}
+};
+
 module.exports = { register, signin };

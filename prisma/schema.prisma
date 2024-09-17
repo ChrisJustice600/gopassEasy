@@ -14,27 +14,31 @@ model User {
   role      Role     @default(USER)
   tickets   Ticket[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Ticket {
   id            Int          @id @default(autoincrement())
   userId        Int
   flightType    FlightType
-  qrCode        String
+  qrCode        String       @unique
   status        TicketStatus @default(VALID)
   transaction   Transaction  @relation(fields: [transactionId], references: [id])
   transactionId Int
   createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }
 
 model Transaction {
-  id            Int           @id @default(autoincrement())
-  amount        Float
-  paymentMethod PaymentMethod
-  createdAt     DateTime      @default(now())
-  tickets       Ticket[]
+  id                    Int           @id @default(autoincrement())
+  amount                Float
+  paymentMethod         PaymentMethod
+  stripePaymentIntentId String?       @unique
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  tickets               Ticket[]
 }
 
 enum Role {
