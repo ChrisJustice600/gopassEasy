@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { purchase } = require("../../src/controllers/authController");
+const { purchase } = require("../../src/controllers/ticketController");
 
 const authRouter = Router();
 

@@ -1,3 +1,5 @@
+const { prisma } = require("../../database/prisma");
+
 const purchase = async (req, res) => {
   const { flightType, paymentMethod } = req.body;
   const qrCode = generateQRCode(); // Une fonction qui génère un QR code
@@ -19,4 +21,8 @@ const purchase = async (req, res) => {
   });
 
   res.status(201).json(ticket);
+};
+
+module.exports = {
+  purchase,
 };
