@@ -1,8 +1,3 @@
-// const { comparePassword } = require("../../bcryptConfigconfig/bcryptConfig");
-const { generateToken } = require("../../config/jwtconfig");
-const { prisma, findUserByEmail } = require("../../database/prisma");
-const bcrypt = require("bcrypt");
-
 const purchase = async (req, res) => {
   const { flightType, paymentMethod } = req.body;
   const qrCode = generateQRCode(); // Une fonction qui génère un QR code
@@ -25,5 +20,3 @@ const purchase = async (req, res) => {
 
   res.status(201).json(ticket);
 };
-
-module.exports = { purchase };
