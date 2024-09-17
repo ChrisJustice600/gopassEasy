@@ -58,11 +58,12 @@ async function signin(req, res) {
     }
 
     const token = generateToken(user);
-    res.cookie("token", token).json({
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    });
+    // res.cookie("token", token).json({
+    //   username: user.username,
+    //   email: user.email,
+    //   role: user.role,
+    // });
+    res.status(200).json({ token });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error });
