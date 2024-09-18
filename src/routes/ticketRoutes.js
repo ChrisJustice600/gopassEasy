@@ -1,10 +1,31 @@
 const { Router } = require("express");
-const { purchase } = require("../../src/controllers/ticketController");
-const { listTickets } = require("../../src/controllers/ticketController");
+const { purchase, listTickets } = require("../controllers/ticketController");
+const {
+  scanQRCode,
+  invalidateTicket,
+} = require("../controllers/agentController");
+const {
+  checkUserAuthenticated,
+  checkUserRole,
+} = require("../middleware/authMiddleware");
 
-const authRouter = Router();
+const ticketRouter = Router();
 
-authRouter.post("/tickets/purchase", checkUserAuthenticated, purchase);
-authRouter.get("/tickets/list", checkUserAuthenticated, listTickets);
+ticketRouter.post("/tickets/purchase", checkUserAuthenticated, purchase);
+ticketRouter.get("/tickets/list", checkUserAuthenticated, listTickets);
 
-module.exports = authRouter;
+// Agent routes
+ticketRouter.post(
+  "/agent/scan",
+  checkUserAuthenticated,
+  checkUserRole(["AGENT", "ADMIN"]),
+  scanQRCode
+);
+ticketRouter.post(
+  "/agent/invalidate",
+  checkUserAuthenticated,
+  checkUserRole(["AGENT", "ADMIN"]),
+  invalidateTicket
+);
+
+module.exports = ticketRouter;

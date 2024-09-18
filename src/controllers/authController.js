@@ -80,4 +80,52 @@ const signin = async (req, res) => {
   }
 };
 
-module.exports = { register, signin };
+const updateUserInfo = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { email, password } = req.body;
+
+    let updateData = {};
+
+    if (email) {
+      if (!EMAIL_REGEX.test(email)) {
+        return res.status(400).json({ error: "Invalid email address" });
+      }
+      updateData.email = email;
+    }
+
+    if (password) {
+      const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+      updateData.password = passwordHash;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      message: "User information updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user information:", error);
+    if (error.code === "P2002" && error.meta?.target?.includes("email")) {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { register, signin, updateUserInfo };
