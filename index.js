@@ -30,9 +30,6 @@ app.use(
 );
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  res.send("Hello word");
-});
 app.use("/auth", authRouter);
 // app.use("/api", ticketRouter);
 
