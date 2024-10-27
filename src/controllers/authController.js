@@ -12,23 +12,28 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
  */
 const register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ error: "L'email et le mot de passe sont requis" });
     }
 
     if (!EMAIL_REGEX.test(email)) {
-      return res.status(400).json({ error: "Invalid email address" });
+      return res.status(400).json({ error: "Adresse email invalide" });
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
+    // const role = email === "test01@gmail.com" ? "ADMIN" : "USER";
+
     const user = await prisma.user.create({
       data: {
+        username,
         email,
         password: passwordHash,
-        role: "USER",
+        // role: "ADMIN",
       },
     });
 
@@ -36,12 +41,12 @@ const register = async (req, res) => {
       .status(201)
       .json({ user: { id: user.id, email: user.email, role: user.role } });
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Erreur lors de la création de l'utilisateur:", error);
 
     if (error.code === "P2002" && error.meta?.target?.includes("email")) {
-      return res.status(400).json({ error: "Email already exists" });
+      return res.status(400).json({ error: "Cet email existe déjà" });
     }
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 };
 

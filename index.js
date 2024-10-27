@@ -10,7 +10,7 @@ const PORT = process.env.PORT;
 const app = express();
 
 const authRouter = require("./src/routes/authRoutes");
-const ticketRouter = require("./src/routes/ticketRoutes");
+// const ticketRouter = require("./src/routes/ticketRoutes");
 
 app.use(
   cors({
@@ -34,7 +34,7 @@ app.get("/", async (req, res) => {
   res.send("Hello word");
 });
 app.use("/auth", authRouter);
-app.use("/api", ticketRouter);
+// app.use("/api", ticketRouter);
 
 app.get("/", (req, res) => {
   res.send("<h1>Bienvenue au serveur C3</h1>");
