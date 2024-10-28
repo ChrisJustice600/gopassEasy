@@ -41,7 +41,7 @@ const purchase = async (req, res) => {
         data: {
           amount,
           paymentMethod,
-          stripePaymentIntentId: transactionReference, // Remplacer par transactionReference
+          transactionReference, // Remplacer par transactionReference
         },
       });
     } else {
