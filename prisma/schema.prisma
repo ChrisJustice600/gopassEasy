@@ -33,13 +33,13 @@ model Ticket {
 }
 
 model Transaction {
-  id                    Int           @id @default(autoincrement())
-  amount                Float
-  paymentMethod         PaymentMethod
-  stripePaymentIntentId String?       @unique
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-  tickets               Ticket[]
+  id                   Int           @id @default(autoincrement())
+  amount               Float
+  paymentMethod        PaymentMethod
+  transactionReference String?       @unique // Remplace stripePaymentIntentId
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  tickets              Ticket[]
 }
 
 enum Role {

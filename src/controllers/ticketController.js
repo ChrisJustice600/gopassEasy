@@ -11,67 +11,67 @@ const generateQRCode = async (text) => {
   }
 };
 
-// const purchase = async (req, res) => {
-//   const { flightType, paymentMethod, stripeToken } = req.body;
+const purchase = async (req, res) => {
+  const { flightType, paymentMethod } = req.body;
 
-//   try {
-//     const amount = flightType === "NATIONAL" ? 100 : 200;
+  try {
+    // Définir le montant en fonction du type de vol
+    const amount = flightType === "NATIONAL" ? 100 : 200;
 
-//     let transaction;
+    let transaction;
 
-//     if (paymentMethod === "CARD") {
-//       // Process Stripe payment
-//       const charge = await stripe.charges.create({
-//         amount: amount * 100, // Stripe expects amount in cents
-//         currency: "eur",
-//         source: stripeToken,
-//         description: `Flight ticket purchase - ${flightType}`,
-//       });
+    // Simulation de paiement par carte bancaire ou Mobile Money
+    if (paymentMethod === "CARD" || paymentMethod === "MOBILE_MONEY") {
+      // Générer une référence de transaction unique pour la simulation
+      const transactionReference = `simulated-${Date.now()}-${Math.floor(
+        Math.random() * 10000
+      )}`;
 
-//       if (charge.status !== "succeeded") {
-//         return res.status(400).json({ error: "Payment failed" });
-//       }
+      // Supposons que le paiement est réussi pour la simulation
+      const paymentSuccess = true;
 
-//       // Create transaction record after successful payment
-//       transaction = await prisma.transaction.create({
-//         data: {
-//           amount,
-//           paymentMethod,
-//           stripeChargeId: charge.id,
-//         },
-//       });
-//     } else {
-//       // For other payment methods, create transaction immediately
-//       transaction = await prisma.transaction.create({
-//         data: {
-//           amount,
-//           paymentMethod,
-//         },
-//       });
-//     }
+      if (!paymentSuccess) {
+        return res
+          .status(400)
+          .json({ error: "Échec de la simulation de paiement" });
+      }
 
-//     // Generate unique text for QR code
-//     const uniqueText = `${req.user.id}-${transaction.id}-${Date.now()}`;
+      // Créer l'enregistrement de la transaction après la simulation de paiement réussie
+      transaction = await prisma.transaction.create({
+        data: {
+          amount,
+          paymentMethod,
+          stripePaymentIntentId: transactionReference, // Remplacer par transactionReference
+        },
+      });
+    } else {
+      return res
+        .status(400)
+        .json({ error: "Méthode de paiement non supportée" });
+    }
 
-//     // Generate QR code
-//     const qrCodeBase64 = await generateQRCode(uniqueText);
+    // Générer un texte unique pour le code QR
+    const uniqueText = `${req.user.id}-${transaction.id}-${Date.now()}`;
 
-//     // Create ticket
-//     const ticket = await prisma.ticket.create({
-//       data: {
-//         userId: req.user.id,
-//         flightType,
-//         qrCode: qrCodeBase64,
-//         transactionId: transaction.id,
-//       },
-//     });
+    // Fonction simulée pour générer un code QR en base64 (tu pourrais utiliser une bibliothèque pour générer un QR réel)
+    const qrCodeBase64 = await generateQRCode(uniqueText);
 
-//     res.status(201).json(ticket);
-//   } catch (err) {
-//     console.error("Erreur lors de la création du ticket :", err);
-//     res.status(500).json({ error: "Erreur interne du serveur" });
-//   }
-// };
+    // Créer le ticket
+    const ticket = await prisma.ticket.create({
+      data: {
+        userId: req.user.id,
+        flightType,
+        qrCode: qrCodeBase64,
+        transactionId: transaction.id,
+      },
+    });
+
+    res.status(201).json(ticket);
+  } catch (err) {
+    console.error("Erreur lors de la création du ticket :", err);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+};
 
 const listTickets = async (req, res) => {
   const tickets = await prisma.ticket.findMany({
@@ -100,7 +100,7 @@ const scanTickets = async (req, res) => {
 };
 
 module.exports = {
-  // purchase,
+  purchase,
   listTickets,
   scanTickets,
 };
