@@ -11,7 +11,7 @@ const {
 
 const ticketRouter = Router();
 
-ticketRouter.post("/tickets/purchase", checkUserAuthenticated, purchase);
+ticketRouter.post("/tickets/purchase", purchase);
 ticketRouter.get("/tickets/list", checkUserAuthenticated, listTickets);
 
 // Agent routes
