@@ -13,6 +13,7 @@ const generateQRCode = async (text) => {
 
 const purchase = async (req, res) => {
   const { flightType, paymentMethod } = req.body;
+  console.log(flightType, paymentMethod);
 
   try {
     // Définir le montant en fonction du type de vol
@@ -41,7 +42,7 @@ const purchase = async (req, res) => {
         data: {
           amount,
           paymentMethod,
-          transactionReference, // Remplacer par transactionReference
+          stripePaymentIntentId: transactionReference, // Remplacer par transactionReference
         },
       });
     } else {
