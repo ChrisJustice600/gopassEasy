@@ -13,16 +13,17 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    console.log(username, email, password);
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "L'email et le mot de passe sont requis" });
-    }
+    // if (!email || !password) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "L'email et le mot de passe sont requis" });
+    // }
 
-    if (!EMAIL_REGEX.test(email)) {
-      return res.status(400).json({ error: "Adresse email invalide" });
-    }
+    // if (!EMAIL_REGEX.test(email)) {
+    //   return res.status(400).json({ error: "Adresse email invalide" });
+    // }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
