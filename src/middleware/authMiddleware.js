@@ -32,7 +32,11 @@ const checkUserAuthenticated = (req, res, next) => {
     return res.status(401).json({ error: "Invalid token" });
   }
 
-  req.user = decoded;
+  req.user = {
+    id: decoded.id,
+    email: decoded.email,
+    username: decoded.username,
+  };
   next();
 };
 
