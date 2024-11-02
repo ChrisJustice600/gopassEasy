@@ -1,5 +1,9 @@
 const { Router } = require("express");
-const { purchase, listTickets } = require("../controllers/ticketController");
+const {
+  purchase,
+  listTickets,
+  getUserTickets,
+} = require("../controllers/ticketController");
 const {
   scanQRCode,
   invalidateTicket,
@@ -13,6 +17,7 @@ const ticketRouter = Router();
 
 ticketRouter.post("/tickets/purchase", checkUserAuthenticated, purchase);
 ticketRouter.get("/tickets/list", checkUserAuthenticated, listTickets);
+ticketRouter.get("/tickets/user", checkUserAuthenticated, getUserTickets);
 
 // Agent routes
 ticketRouter.post(

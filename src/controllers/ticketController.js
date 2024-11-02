@@ -100,8 +100,32 @@ const scanTickets = async (req, res) => {
   res.json({ message: "Ticket validated" });
 };
 
+const getUserTickets = async (req, res) => {
+  try {
+    // Vérifiez si l'ID de l'utilisateur est présent dans la requête
+    if (!req.user || !req.user.id) {
+      return res.status(400).json({ error: "Utilisateur non authentifié" });
+    }
+
+    // Récupérez tous les tickets de cet utilisateur
+    const tickets = await prisma.ticket.findMany({
+      where: { userId: req.user.id },
+      include: {
+        transaction: true, // Inclut les détails de la transaction associée si nécessaire
+      },
+    });
+
+    // Retourner la liste des tickets
+    res.status(200).json(tickets);
+  } catch (err) {
+    console.error("Erreur lors de la récupération des tickets :", err);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+};
+
 module.exports = {
   purchase,
   listTickets,
   scanTickets,
+  getUserTickets,
 };

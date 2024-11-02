@@ -78,6 +78,7 @@ const signin = async (req, res) => {
     console.log(token);
 
     res.cookie("token", token).json({
+      id: user.id,
       username: user.username,
       email: user.email,
       role: user.role,
