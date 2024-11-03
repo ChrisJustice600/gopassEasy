@@ -82,6 +82,7 @@ const signin = async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
+      token: token,
     });
   } catch (error) {
     console.error("Error during signin:", error);
