@@ -15,35 +15,42 @@ const register = async (req, res) => {
     const { username, email, password } = req.body;
     console.log(username, email, password);
 
-    // if (!email || !password) {
-    //   return res
-    //     .status(400)
-    //     .json({ error: "L'email et le mot de passe sont requis" });
-    // }
+    // Vérifiez que l'email et le mot de passe sont fournis
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "L'email et le mot de passe sont requis" });
+    }
 
-    // if (!EMAIL_REGEX.test(email)) {
-    //   return res.status(400).json({ error: "Adresse email invalide" });
-    // }
+    // Vérifiez la validité de l'adresse email
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ error: "Adresse email invalide" });
+    }
 
+    // Hasher le mot de passe
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // const role = email === "test01@gmail.com" ? "ADMIN" : "USER";
+    // Définir le rôle en fonction de l'email
+    const role = email === "admin@gopass.cd" ? "ADMIN" : "USER";
 
+    // Créer l'utilisateur avec le rôle défini
     const user = await prisma.user.create({
       data: {
         username,
         email,
         password: passwordHash,
-        // role: "ADMIN",
+        role, // Attribuer le rôle ici
       },
     });
 
+    // Répondre avec les informations de l'utilisateur créé
     res
       .status(201)
       .json({ user: { id: user.id, email: user.email, role: user.role } });
   } catch (error) {
     console.error("Erreur lors de la création de l'utilisateur:", error);
 
+    // Gérer les erreurs de duplication d'email
     if (error.code === "P2002" && error.meta?.target?.includes("email")) {
       return res.status(400).json({ error: "Cet email existe déjà" });
     }
