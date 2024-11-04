@@ -84,24 +84,37 @@ const listTickets = async (req, res) => {
 const scanTickets = async (req, res) => {
   const { qrCode } = req.body;
 
-  const ticket = await prisma.ticket.findUnique({
-    where: { qrCode },
-    include: {
-      user: true, // Inclut les informations de l'utilisateur
-      transaction: true, // Inclut les informations de la transaction
-    },
-  });
+  try {
+    const ticket = await prisma.ticket.findUnique({
+      where: { qrCode },
+      include: {
+        user: true,
+        transaction: true,
+      },
+    });
 
-  if (!ticket || ticket.status === "INVALID") {
-    return res.status(400).json({ error: "Invalid ticket" });
+    if (!ticket) {
+      console.error("Ticket introuvable ou statut INVALID");
+      return res.status(400).json({ error: "Invalid ticket" });
+    }
+
+    if (ticket.status === "INVALID") {
+      console.error("Ticket déjà invalidé");
+      return res.status(400).json({ error: "Ticket déjà invalidé" });
+    }
+
+    await prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { status: "INVALID" },
+    });
+
+    res.json({ message: "Ticket validated", ticket });
+  } catch (error) {
+    console.error("Erreur serveur :", error);
+    res
+      .status(500)
+      .json({ error: "Erreur serveur, veuillez réessayer plus tard." });
   }
-
-  await prisma.ticket.update({
-    where: { id: ticket.id },
-    data: { status: "INVALID" },
-  });
-
-  res.json({ message: "Ticket validated", ticket });
 };
 
 const getUserTickets = async (req, res) => {
