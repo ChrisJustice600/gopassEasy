@@ -94,12 +94,15 @@ const scanTickets = async (req, res) => {
     });
 
     if (!ticket) {
-      console.error("Ticket introuvable ou statut INVALID");
-      return res.status(400).json({ error: "Invalid ticket" });
+      console.error("Ticket introuvable avec le QR Code :", qrCode);
+      return res.status(400).json({ error: "Ticket introuvable" });
     }
 
     if (ticket.status === "INVALID") {
-      console.error("Ticket déjà invalidé");
+      console.error(
+        "Tentative de validation d'un ticket déjà invalidé. ID :",
+        ticket.id
+      );
       return res.status(400).json({ error: "Ticket déjà invalidé" });
     }
 
@@ -108,9 +111,9 @@ const scanTickets = async (req, res) => {
       data: { status: "INVALID" },
     });
 
-    res.json({ message: "Ticket validated", ticket });
+    res.json({ message: "Ticket validé avec succès", ticket });
   } catch (error) {
-    console.error("Erreur serveur :", error);
+    console.error("Erreur lors de la validation du ticket :", error);
     res
       .status(500)
       .json({ error: "Erreur serveur, veuillez réessayer plus tard." });

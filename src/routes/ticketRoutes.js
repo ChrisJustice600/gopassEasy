@@ -3,6 +3,7 @@ const {
   purchase,
   listTickets,
   getUserTickets,
+  scanTickets,
 } = require("../controllers/ticketController");
 const {
   scanQRCode,
@@ -23,8 +24,8 @@ ticketRouter.post("/tickets/user", checkUserAuthenticated, getUserTickets);
 ticketRouter.post(
   "/agent/scan",
   checkUserAuthenticated,
-  checkUserRole(["AGENT", "ADMIN"]),
-  scanQRCode
+  // checkUserRole(["AGENT", "ADMIN"]),
+  scanTickets
 );
 ticketRouter.post(
   "/agent/invalidate",
