@@ -86,6 +86,10 @@ const scanTickets = async (req, res) => {
 
   const ticket = await prisma.ticket.findUnique({
     where: { qrCode },
+    include: {
+      user: true, // Inclut les informations de l'utilisateur
+      transaction: true, // Inclut les informations de la transaction
+    },
   });
 
   if (!ticket || ticket.status === "INVALID") {
@@ -97,7 +101,7 @@ const scanTickets = async (req, res) => {
     data: { status: "INVALID" },
   });
 
-  res.json({ message: "Ticket validated" });
+  res.json({ message: "Ticket validated", ticket });
 };
 
 const getUserTickets = async (req, res) => {
@@ -114,7 +118,6 @@ const getUserTickets = async (req, res) => {
         transaction: true, // Inclut les détails de la transaction associée si nécessaire
       },
     });
-
     // Retourner la liste des tickets
     res.status(200).json(tickets);
   } catch (err) {
