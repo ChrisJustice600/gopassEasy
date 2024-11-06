@@ -67,33 +67,57 @@ const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Vérification des champs requis
     if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ error: "Email et mot de passe sont requis." });
     }
 
+    // Vérification de format de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ error: "Le format de l'email est invalide." });
+    }
+
+    // Vérification de l'utilisateur
     const user = await findUserByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ error: "Email ou mot de passe incorrect." });
     }
 
+    // Vérification du mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ error: "Email ou mot de passe incorrect." });
     }
 
+    // Génération et envoi du token
     const token = generateToken(user);
-    console.log(token);
-
-    res.cookie("token", token).json({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      token: token,
-    });
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict",
+      })
+      .json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        token: token,
+      });
   } catch (error) {
-    console.error("Error during signin:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Erreur lors de la connexion:", error);
+    res
+      .status(500)
+      .json({ error: "Erreur serveur. Veuillez réessayer plus tard." });
   }
 };
 
