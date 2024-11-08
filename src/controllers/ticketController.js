@@ -121,26 +121,28 @@ const scanTickets = async (req, res) => {
 };
 
 const getUserTickets = async (req, res) => {
-  console.log(req.user.id);
-
   try {
-    // Vérifiez si l'ID de l'utilisateur est présent dans la requête
+    // Vérifiez si l'utilisateur est authentifié et si son ID est bien défini
     if (!req.user || !req.user.id) {
       return res.status(400).json({ error: "Utilisateur non authentifié" });
     }
 
-    // Récupérez tous les tickets de cet utilisateur
+    // Récupérez l'ID de l'utilisateur et assurez-vous qu'il est de type Int
+    const userId = parseInt(req.user.id, 10);
+
+    // Récupérez tous les tickets de cet utilisateur, y compris la transaction associée
     const tickets = await prisma.ticket.findMany({
-      where: { userId: req.user.id },
+      where: { userId: userId },
       include: {
-        transaction: true, // Inclut les détails de la transaction associée si nécessaire
+        transaction: true, // Inclut les détails de la transaction associée
       },
     });
-    // Retourner la liste des tickets
-    res.status(200).json(tickets);
+
+    // Retourne la liste des tickets
+    return res.status(200).json(tickets);
   } catch (err) {
     console.error("Erreur lors de la récupération des tickets :", err);
-    res.status(500).json({ error: "Erreur interne du serveur" });
+    return res.status(500).json({ error: "Erreur interne du serveur" });
   }
 };
 
