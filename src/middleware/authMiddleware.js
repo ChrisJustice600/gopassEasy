@@ -9,12 +9,14 @@ const checkUserAuthenticated = (req, res, next) => {
   }
 
   const decoded = verifyToken(token);
+  console.log(decoded);
+
   if (!decoded) {
     return res.status(401).json({ error: "Invalid token" });
   }
 
   req.user = {
-    id: decoded.id,
+    id: decoded.idy,
     email: decoded.email,
     username: decoded.username,
   };
