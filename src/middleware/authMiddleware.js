@@ -16,7 +16,7 @@ const checkUserAuthenticated = (req, res, next) => {
   }
 
   req.user = {
-    id: decoded.idy,
+    id: decoded.id,
     email: decoded.email,
     username: decoded.username,
   };
