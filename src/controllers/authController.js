@@ -13,18 +13,38 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    console.log(username, email, password);
 
-    // Vérifiez que l'email et le mot de passe sont fournis
-    if (!email || !password) {
+    // Vérifiez que tous les champs sont fournis
+    if (!username || !email || !password) {
       return res
         .status(400)
-        .json({ error: "L'email et le mot de passe sont requis" });
+        .json({
+          error: "Nom d'utilisateur, email, et mot de passe sont requis",
+        });
+    }
+
+    // Vérifiez la longueur et la validité du nom d'utilisateur
+    if (username.length < 3 || username.length > 30) {
+      return res
+        .status(400)
+        .json({
+          error: "Le nom d'utilisateur doit comporter entre 3 et 30 caractères",
+        });
     }
 
     // Vérifiez la validité de l'adresse email
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ error: "Adresse email invalide" });
+    }
+
+    // Vérifiez la force du mot de passe
+    const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!PASSWORD_REGEX.test(password)) {
+      return res.status(400).json({
+        error:
+          "Le mot de passe doit contenir au moins 8 caractères, dont une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial",
+      });
     }
 
     // Hasher le mot de passe
@@ -39,7 +59,7 @@ const register = async (req, res) => {
         username,
         email,
         password: passwordHash,
-        role, // Attribuer le rôle ici
+        role,
       },
     });
 
@@ -50,7 +70,6 @@ const register = async (req, res) => {
   } catch (error) {
     console.error("Erreur lors de la création de l'utilisateur:", error);
 
-    // Gérer les erreurs de duplication d'email
     if (error.code === "P2002" && error.meta?.target?.includes("email")) {
       return res.status(400).json({ error: "Cet email existe déjà" });
     }
