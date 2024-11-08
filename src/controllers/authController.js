@@ -14,38 +14,38 @@ const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Vérifiez que tous les champs sont fournis
-    if (!username || !email || !password) {
-      return res
-        .status(400)
-        .json({
-          error: "Nom d'utilisateur, email, et mot de passe sont requis",
-        });
-    }
+    // // Vérifiez que tous les champs sont fournis
+    // if (!username || !email || !password) {
+    //   return res
+    //     .status(400)
+    //     .json({
+    //       error: "Nom d'utilisateur, email, et mot de passe sont requis",
+    //     });
+    // }
 
-    // Vérifiez la longueur et la validité du nom d'utilisateur
-    if (username.length < 3 || username.length > 30) {
-      return res
-        .status(400)
-        .json({
-          error: "Le nom d'utilisateur doit comporter entre 3 et 30 caractères",
-        });
-    }
+    // // Vérifiez la longueur et la validité du nom d'utilisateur
+    // if (username.length < 3 || username.length > 30) {
+    //   return res
+    //     .status(400)
+    //     .json({
+    //       error: "Le nom d'utilisateur doit comporter entre 3 et 30 caractères",
+    //     });
+    // }
 
-    // Vérifiez la validité de l'adresse email
-    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!EMAIL_REGEX.test(email)) {
-      return res.status(400).json({ error: "Adresse email invalide" });
-    }
+    // // Vérifiez la validité de l'adresse email
+    // const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!EMAIL_REGEX.test(email)) {
+    //   return res.status(400).json({ error: "Adresse email invalide" });
+    // }
 
-    // Vérifiez la force du mot de passe
-    const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    if (!PASSWORD_REGEX.test(password)) {
-      return res.status(400).json({
-        error:
-          "Le mot de passe doit contenir au moins 8 caractères, dont une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial",
-      });
-    }
+    // // Vérifiez la force du mot de passe
+    // const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    // if (!PASSWORD_REGEX.test(password)) {
+    //   return res.status(400).json({
+    //     error:
+    //       "Le mot de passe doit contenir au moins 8 caractères, dont une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial",
+    //   });
+    // }
 
     // Hasher le mot de passe
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
