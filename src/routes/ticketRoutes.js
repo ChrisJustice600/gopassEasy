@@ -18,7 +18,7 @@ const ticketRouter = Router();
 
 ticketRouter.post("/tickets/purchase", checkUserAuthenticated, purchase);
 ticketRouter.get("/tickets/list", checkUserAuthenticated, listTickets);
-ticketRouter.post("/tickets/user", checkUserAuthenticated, getUserTickets);
+ticketRouter.post("/tickets/user", getUserTickets);
 
 // Agent routes
 ticketRouter.post(
@@ -27,11 +27,11 @@ ticketRouter.post(
   // checkUserRole(["AGENT", "ADMIN"]),
   scanTickets
 );
-ticketRouter.post(
-  "/agent/invalidate",
-  checkUserAuthenticated,
-  checkUserRole(["AGENT", "ADMIN"]),
-  invalidateTicket
-);
+// ticketRouter.post(
+//   "/agent/invalidate",
+//   checkUserAuthenticated,
+//   checkUserRole(["AGENT", "ADMIN"]),
+//   invalidateTicket
+// );
 
 module.exports = ticketRouter;

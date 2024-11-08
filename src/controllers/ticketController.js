@@ -121,6 +121,8 @@ const scanTickets = async (req, res) => {
 };
 
 const getUserTickets = async (req, res) => {
+  console.log(req.user);
+
   try {
     // Vérifiez si l'utilisateur est authentifié et si son ID est bien défini
     if (!req.user || !req.user.id) {
