@@ -54,11 +54,13 @@ const purchase = async (req, res) => {
     // Création du ticket
     const ticket = await prisma.ticket.create({
       data: {
-        userId,
         flightType,
         qrCode: qrCodeBase64,
         transaction: {
           connect: { id: transaction.id },
+        },
+        user: {
+          connect: { id: userId }, // Connecter un utilisateur existant avec son id
         },
       },
     });
