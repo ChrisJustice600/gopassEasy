@@ -48,11 +48,13 @@ const purchase = async (req, res) => {
     // Génération d'un texte unique pour le QR code
     const uniqueText = `${req.user.id}-${transaction.id}-${Date.now()}`;
     const qrCodeBase64 = await generateQRCode(uniqueText);
+    const userId = req.user.id;
+    console.log(userId);
 
     // Création du ticket
     const ticket = await prisma.ticket.create({
       data: {
-        userId: req.user.id,
+        userId,
         flightType,
         qrCode: qrCodeBase64,
         transaction: {
