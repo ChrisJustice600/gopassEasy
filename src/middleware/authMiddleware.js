@@ -14,6 +14,7 @@ const checkUserAuthenticated = (req, res, next) => {
   if (!decoded) {
     return res.status(401).json({ error: "Invalid token" });
   }
+  s;
 
   req.user = {
     id: decoded.id,
