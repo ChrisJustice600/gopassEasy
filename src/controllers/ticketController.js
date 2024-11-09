@@ -13,62 +13,61 @@ const generateQRCode = async (text) => {
 
 const purchase = async (req, res) => {
   const { flightType, paymentMethod } = req.body;
-  console.log(flightType, paymentMethod);
 
   try {
     // Définir le montant en fonction du type de vol
     const amount = flightType === "NATIONAL" ? 100 : 200;
 
-    let transaction;
-
-    // Simulation de paiement par carte bancaire ou Mobile Money
-    if (paymentMethod === "CARD" || paymentMethod === "MOBILE_MONEY") {
-      const transactionReference = `simulated-${Date.now()}-${Math.floor(
-        Math.random() * 10000
-      )}`;
-      const paymentSuccess = true; // Simuler le succès du paiement
-
-      if (!paymentSuccess) {
-        return res
-          .status(400)
-          .json({ error: "Échec de la simulation de paiement" });
-      }
-
-      // Créer l'enregistrement de la transaction
-      transaction = await prisma.transaction.create({
-        data: {
-          amount,
-          paymentMethod,
-          stripePaymentIntentId: transactionReference,
-        },
-      });
-    } else {
+    if (!["CARD", "MOBILE_MONEY"].includes(paymentMethod)) {
       return res
         .status(400)
         .json({ error: "Méthode de paiement non supportée" });
     }
 
-    // Générer un texte unique pour le code QR
+    // Simulation d'un paiement
+    const transactionReference = `simulated-${Date.now()}-${Math.floor(
+      Math.random() * 10000
+    )}`;
+    const paymentSuccess = true; // Simule le succès du paiement
+
+    if (!paymentSuccess) {
+      return res
+        .status(400)
+        .json({ error: "Échec de la simulation de paiement" });
+    }
+
+    // Création de la transaction
+    const transaction = await prisma.transaction.create({
+      data: {
+        amount,
+        paymentMethod,
+        stripePaymentIntentId: transactionReference,
+      },
+    });
+
+    // Génération d'un texte unique pour le QR code
     const uniqueText = `${req.user.id}-${transaction.id}-${Date.now()}`;
     const qrCodeBase64 = await generateQRCode(uniqueText);
-    console.log(req.user);
 
-    // Créer le ticket avec la transaction
+    // Création du ticket
     const ticket = await prisma.ticket.create({
       data: {
         userId: req.user.id,
         flightType,
         qrCode: qrCodeBase64,
         transaction: {
-          connect: { id: transaction.id }, // Connecter la transaction créée
+          connect: { id: transaction.id },
         },
       },
     });
 
-    res.status(201).json(ticket);
+    return res.status(201).json({
+      message: "Ticket généré avec succès",
+      ticket,
+    });
   } catch (err) {
     console.error("Erreur lors de la création du ticket :", err);
-    res.status(500).json({ error: "Erreur interne du serveur" });
+    return res.status(500).json({ error: "Erreur interne du serveur" });
   }
 };
 const listTickets = async (req, res) => {
