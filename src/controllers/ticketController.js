@@ -81,12 +81,27 @@ const listTickets = async (req, res) => {
   res.json(tickets);
 };
 
+// const QRCode = require("qrcode"); // Assurez-vous d'avoir ce module pour décoder le QR code
+
+const decodeQRCode = async (qrCodeData) => {
+  try {
+    return await QRCode.decode(qrCodeData); // Si le QR code est scanné comme image
+  } catch (err) {
+    console.error("Erreur lors du décodage du code QR :", err);
+    throw new Error("Échec du décodage du QR code");
+  }
+};
+
 const scanTickets = async (req, res) => {
   const { qrCode } = req.body;
 
   try {
+    // Décoder le texte du QR code si nécessaire
+    const decodedText = await decodeQRCode(qrCode);
+
+    // Rechercher le ticket en fonction du QR code décodé
     const ticket = await prisma.ticket.findUnique({
-      where: { qrCode },
+      where: { qrCode: decodedText },
       include: {
         user: true,
         transaction: true,
@@ -94,7 +109,7 @@ const scanTickets = async (req, res) => {
     });
 
     if (!ticket) {
-      console.error("Ticket introuvable avec le QR Code :", qrCode);
+      console.error("Ticket introuvable avec le QR Code :", decodedText);
       return res.status(400).json({ error: "Ticket introuvable" });
     }
 
@@ -106,12 +121,18 @@ const scanTickets = async (req, res) => {
       return res.status(400).json({ error: "Ticket déjà invalidé" });
     }
 
+    // Marquer le ticket comme invalidé pour éviter une double utilisation
     await prisma.ticket.update({
       where: { id: ticket.id },
       data: { status: "INVALID" },
     });
 
-    res.json({ message: "Ticket validé avec succès", ticket });
+    res.json({
+      message: "Ticket validé avec succès",
+      ticket,
+      user: ticket.user,
+      transaction: ticket.transaction,
+    });
   } catch (error) {
     console.error("Erreur lors de la validation du ticket :", error);
     res
