@@ -23,13 +23,10 @@ const purchase = async (req, res) => {
 
     // Simulation de paiement par carte bancaire ou Mobile Money
     if (paymentMethod === "CARD" || paymentMethod === "MOBILE_MONEY") {
-      // Générer une référence de transaction unique pour la simulation
       const transactionReference = `simulated-${Date.now()}-${Math.floor(
         Math.random() * 10000
       )}`;
-
-      // Supposons que le paiement est réussi pour la simulation
-      const paymentSuccess = true;
+      const paymentSuccess = true; // Simuler le succès du paiement
 
       if (!paymentSuccess) {
         return res
@@ -37,12 +34,12 @@ const purchase = async (req, res) => {
           .json({ error: "Échec de la simulation de paiement" });
       }
 
-      // Créer l'enregistrement de la transaction après la simulation de paiement réussie
+      // Créer l'enregistrement de la transaction
       transaction = await prisma.transaction.create({
         data: {
           amount,
           paymentMethod,
-          stripePaymentIntentId: transactionReference, // Remplacer par transactionReference
+          stripePaymentIntentId: transactionReference,
         },
       });
     } else {
@@ -53,17 +50,17 @@ const purchase = async (req, res) => {
 
     // Générer un texte unique pour le code QR
     const uniqueText = `${req.user.id}-${transaction.id}-${Date.now()}`;
-
-    // Fonction simulée pour générer un code QR en base64 (tu pourrais utiliser une bibliothèque pour générer un QR réel)
     const qrCodeBase64 = await generateQRCode(uniqueText);
 
-    // Créer le ticket
+    // Créer le ticket avec la transaction
     const ticket = await prisma.ticket.create({
       data: {
         userId: req.user.id,
         flightType,
         qrCode: qrCodeBase64,
-        transactionId: transaction.id,
+        transaction: {
+          connect: { id: transaction.id }, // Connecter la transaction créée
+        },
       },
     });
 
@@ -73,7 +70,6 @@ const purchase = async (req, res) => {
     res.status(500).json({ error: "Erreur interne du serveur" });
   }
 };
-
 const listTickets = async (req, res) => {
   const tickets = await prisma.ticket.findMany({
     where: { userId: req.user.id },
