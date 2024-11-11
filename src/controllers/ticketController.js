@@ -81,63 +81,60 @@ const listTickets = async (req, res) => {
   res.json(tickets);
 };
 
-// const QRCode = require("qrcode"); // Assurez-vous d'avoir ce module pour décoder le QR code
-
-const decodeQRCode = async (qrCodeData) => {
-  try {
-    return await QRCode.decode(qrCodeData); // Si le QR code est scanné comme image
-  } catch (err) {
-    console.error("Erreur lors du décodage du code QR :", err);
-    throw new Error("Échec du décodage du QR code");
-  }
-};
-
+// Fonction pour scanner et traiter le QR code
 const scanTickets = async (req, res) => {
-  const { qrCode } = req.body;
+  const { qrCode } = req.body; // Texte unique scanné et envoyé depuis le frontend
 
   try {
-    // Décoder le texte du QR code si nécessaire
-    const decodedText = await decodeQRCode(qrCode);
-
-    // Rechercher le ticket en fonction du QR code décodé
-    const ticket = await prisma.ticket.findUnique({
-      where: { qrCode: decodedText },
+    // Récupérer tous les tickets de la base de données avec leur QR code en Base64
+    const tickets = await prisma.ticket.findMany({
       include: {
-        user: true,
         transaction: true,
+        user: true,
       },
     });
 
-    if (!ticket) {
-      console.error("Ticket introuvable avec le QR Code :", decodedText);
-      return res.status(400).json({ error: "Ticket introuvable" });
+    // Trouver le ticket correspondant en comparant les QR codes
+    let validTicket = null;
+    for (const ticket of tickets) {
+      const decodedText = await QRCode.toDataURL(qrCode);
+      if (ticket.qrCode === decodedText) {
+        validTicket = ticket;
+        break;
+      }
     }
 
-    if (ticket.status === "INVALID") {
-      console.error(
-        "Tentative de validation d'un ticket déjà invalidé. ID :",
-        ticket.id
-      );
-      return res.status(400).json({ error: "Ticket déjà invalidé" });
+    // Si aucun ticket correspondant n'est trouvé
+    if (!validTicket) {
+      return res
+        .status(404)
+        .json({ error: "Ticket non trouvé ou déjà invalidé" });
     }
 
-    // Marquer le ticket comme invalidé pour éviter une double utilisation
+    // Vérifier si le ticket est déjà utilisé
+    if (validTicket.isUsed) {
+      return res.status(400).json({ error: "Ce ticket a déjà été utilisé" });
+    }
+
+    // Invalider le ticket
     await prisma.ticket.update({
-      where: { id: ticket.id },
-      data: { status: "INVALID" },
+      where: {
+        id: validTicket.id,
+      },
+      data: {
+        isUsed: true, // Marquer le ticket comme utilisé
+      },
     });
 
-    res.json({
+    // Renvoyer les informations de l'utilisateur et de la transaction associée
+    return res.status(200).json({
       message: "Ticket validé avec succès",
-      ticket,
-      user: ticket.user,
-      transaction: ticket.transaction,
+      user: validTicket.user,
+      transaction: validTicket.transaction,
     });
-  } catch (error) {
-    console.error("Erreur lors de la validation du ticket :", error);
-    res
-      .status(500)
-      .json({ error: "Erreur serveur, veuillez réessayer plus tard." });
+  } catch (err) {
+    console.error("Erreur lors du scan du QR code :", err);
+    return res.status(500).json({ error: "Erreur interne du serveur" });
   }
 };
 
