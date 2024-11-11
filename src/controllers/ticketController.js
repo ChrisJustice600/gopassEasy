@@ -112,7 +112,7 @@ const scanTickets = async (req, res) => {
     }
 
     // Vérifier si le ticket est déjà utilisé
-    if (validTicket.isUsed) {
+    if (validTicket.status === INVALID) {
       return res.status(400).json({ error: "Ce ticket a déjà été utilisé" });
     }
 
@@ -127,8 +127,30 @@ const scanTickets = async (req, res) => {
     // Renvoyer les informations de l'utilisateur et de la transaction associée
     return res.status(200).json({
       message: "Ticket validé avec succès",
-      user: validTicket.user,
-      transaction: validTicket.transaction,
+      ticket: {
+        id: validTicket.id,
+        qrCode: validTicket.qrCode,
+        flightType: validTicket.flightType,
+        status: validTicket.status,
+        createdAt: validTicket.createdAt,
+        updatedAt: validTicket.updatedAt,
+        user: {
+          id: validTicket.user.id,
+          email: validTicket.user.email,
+          username: validTicket.user.username,
+          role: validTicket.user.role,
+          createdAt: validTicket.user.createdAt,
+          updatedAt: validTicket.user.updatedAt,
+        },
+        transaction: {
+          id: validTicket.transaction.id,
+          amount: validTicket.transaction.amount,
+          paymentMethod: validTicket.transaction.paymentMethod,
+          stripePaymentIntentId: validTicket.transaction.stripePaymentIntentId,
+          createdAt: validTicket.transaction.createdAt,
+          updatedAt: validTicket.transaction.updatedAt,
+        },
+      },
     });
   } catch (err) {
     console.error("Erreur lors du scan du QR code :", err);
