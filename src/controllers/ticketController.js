@@ -112,7 +112,7 @@ const scanTickets = async (req, res) => {
     }
 
     // Vérifier si le ticket est déjà utilisé
-    if (validTicket.status === INVALID) {
+    if (validTicket.status === "INVALID") {
       return res.status(400).json({ error: "Ce ticket a déjà été utilisé" });
     }
 
