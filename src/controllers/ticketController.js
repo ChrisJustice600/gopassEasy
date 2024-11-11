@@ -121,9 +121,7 @@ const scanTickets = async (req, res) => {
       where: {
         id: validTicket.id,
       },
-      data: {
-        isUsed: true, // Marquer le ticket comme utilisé
-      },
+      data: { status: "INVALID" },
     });
 
     // Renvoyer les informations de l'utilisateur et de la transaction associée

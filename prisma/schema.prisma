@@ -28,8 +28,7 @@ model Ticket {
   transactionId Int
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-
-  user User @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
 }
 
 model Transaction {
