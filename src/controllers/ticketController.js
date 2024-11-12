@@ -16,7 +16,7 @@ const purchase = async (req, res) => {
 
   try {
     // Définir le montant en fonction du type de vol
-    const amount = flightType === "NATIONAL" ? 100 : 200;
+    const amount = flightType === "NATIONAL" ? 15 : 50;
 
     if (!["CARD", "MOBILE_MONEY"].includes(paymentMethod)) {
       return res
